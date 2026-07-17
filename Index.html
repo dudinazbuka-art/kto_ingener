@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Инженер по адресу — СК Азбука</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FAF8F3; --card:#FFFFFF; --ink:#1E2A28; --ink-soft:#5B6663; --ink-faint:#8B9491;
+    --line:#E5E1D6; --line-soft:#EEEBE1;
+    --teal:#0F6E56; --teal-deep:#0A4A3A; --teal-tint:#E1F5EE;
+    --amber:#B45309; --amber-tint:#FBEEDC; --amber-line:#EFCE9E;
+    --red:#A32D2D; --red-tint:#FCEBEB; --red-line:#F0C6C6;
+    --violet:#6D3FA0; --violet-tint:#F1E9FA; --violet-line:#DCC7EF;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg); color:var(--ink); font-family:'Manrope',system-ui,sans-serif; -webkit-font-smoothing:antialiased;}
+  .shell{max-width:980px; margin:0 auto; padding:28px 20px 80px;}
+  header.top{margin-bottom:18px; display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;}
+  .eyebrow{font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--teal); margin:0 0 6px;}
+  h1{font-size:26px; font-weight:800; margin:0 0 4px; letter-spacing:-.01em;}
+  .sub{color:var(--ink-soft); font-size:14px; margin:0;}
+
+  .sync-box{display:flex; flex-direction:column; align-items:flex-end; gap:6px; flex:none;}
+  .sync-status{font-size:11.5px; color:var(--ink-faint); font-family:'JetBrains Mono',monospace; text-align:right;}
+  .refresh-btn{
+    all:unset; cursor:pointer; font-size:12px; font-weight:600; color:#fff;
+    background:var(--teal); border-radius:8px; padding:7px 14px; display:inline-flex; align-items:center; gap:6px;
+  }
+  .refresh-btn:hover{ background:var(--teal-deep); }
+  .refresh-btn.spinning svg{ animation: spin 0.9s linear infinite; }
+  @keyframes spin{ from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+
+  .city-tabs{display:flex; gap:6px; flex-wrap:wrap; margin:22px 0 14px;}
+  .city-tabs button{
+    all:unset; cursor:pointer; height:40px; padding:0 16px; border-radius:10px;
+    border:1px solid var(--line); background:var(--card); font-size:13.5px; font-weight:600;
+    color:var(--ink-soft); display:flex; align-items:center; gap:6px;
+  }
+  .city-tabs button.active{background:var(--ink); border-color:var(--ink); color:#fff;}
+  .city-tabs button .dot{width:6px; height:6px; border-radius:50%; background:var(--red); display:none;}
+  .city-tabs button.has-error .dot{display:inline-block;}
+  .city-tabs button.competence-tab{ border-color:var(--violet-line); color:var(--violet); }
+  .city-tabs button.competence-tab.active{ background:var(--violet); border-color:var(--violet); color:#fff; }
+
+  .search-wrap{position:relative; margin-bottom:16px;}
+  .search-wrap input{
+    width:100%; height:46px; border-radius:10px; border:1px solid var(--line); background:var(--card);
+    padding:0 14px 0 40px; font-family:'Manrope',sans-serif; font-size:14.5px; color:var(--ink); outline:none;
+  }
+  .search-wrap input:focus{border-color:var(--teal);}
+  .search-wrap svg.search-icon{position:absolute; left:13px; top:50%; transform:translateY(-50%); opacity:.45;}
+
+  .info-card{
+    background:var(--teal-tint); border-radius:10px; padding:12px 16px; margin-bottom:12px;
+    font-size:13px; color:var(--teal-deep); line-height:1.6; white-space:pre-line;
+  }
+
+  .error-card{
+    display:flex; gap:10px; align-items:flex-start; background:var(--red-tint); border:1px solid var(--red-line);
+    border-radius:10px; padding:12px 14px; margin-bottom:16px; font-size:13px; color:var(--red); line-height:1.5;
+  }
+  .error-card button{
+    all:unset; cursor:pointer; font-size:12px; font-weight:700; color:#fff; background:var(--red);
+    border-radius:6px; padding:5px 10px; flex:none;
+  }
+
+  .loading-card{ text-align:center; padding:60px 20px; color:var(--ink-faint); font-size:14px; }
+  .loading-card .spin{ display:inline-block; margin-bottom:10px; animation: spin 0.9s linear infinite; }
+
+  .toolbar{display:flex; justify-content:space-between; align-items:center; margin:0 2px 12px; gap:10px; flex-wrap:wrap;}
+  .count-line{font-size:12px; color:var(--ink-faint); font-family:'JetBrains Mono',monospace;}
+  .toolbar-btns{display:flex; gap:8px;}
+  .toolbar-btns button{
+    all:unset; cursor:pointer; font-size:12px; font-weight:600; color:var(--teal);
+    border:1px solid var(--teal-tint); background:var(--teal-tint); border-radius:7px; padding:5px 10px;
+  }
+
+  .zhk-group{ background:var(--card); border:1px solid var(--line); border-radius:12px; margin-bottom:10px; overflow:hidden; }
+  .zhk-header{ all:unset; cursor:pointer; display:flex; align-items:center; gap:10px; width:100%; padding:14px 16px; box-sizing:border-box; }
+  .zhk-header:hover{ background:var(--line-soft); }
+  .chevron{ transition: transform .15s ease; color:var(--ink-faint); flex:none; display:flex; }
+  .zhk-group.open > .zhk-header .chevron{ transform:rotate(90deg); }
+  .zhk-title{font-size:14.5px; font-weight:700; color:var(--ink); flex:1;}
+  .zhk-count{ font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--ink-faint); background:var(--line-soft); border-radius:6px; padding:2px 8px; flex:none; }
+  .zhk-body{ display:none; padding:0 16px 14px; }
+  .zhk-group.open > .zhk-body{ display:block; }
+
+  .house{ background:var(--bg); border:1px solid var(--line-soft); border-radius:10px; margin-top:8px; overflow:hidden; }
+  .house-header{ all:unset; cursor:pointer; display:flex; align-items:center; gap:8px; width:100%; padding:10px 12px; box-sizing:border-box; }
+  .house-header:hover{ background:var(--line-soft); }
+  .house.open > .house-header .chevron{ transform:rotate(90deg); }
+  .house-addr{font-size:13.5px; font-weight:700; color:var(--ink); flex:1;}
+  .house-addr .street{font-weight:600;}
+  .house-addr .num{color:var(--teal); font-family:'JetBrains Mono',monospace; font-size:13px;}
+  .house-hint{font-size:11px; color:var(--ink-faint); font-family:'JetBrains Mono',monospace; flex:none;}
+  .house.has-sub .house-hint{ color:var(--violet); font-weight:700; }
+  .house-body{ display:none; padding:2px 12px 12px; }
+  .house.open > .house-body{ display:block; }
+
+  .roles{display:flex; flex-direction:column; gap:6px; margin-bottom:8px;}
+  .role-row{display:flex; gap:8px; font-size:13.5px; align-items:baseline; flex-wrap:wrap;}
+  .role-label{
+    font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.03em;
+    color:var(--teal-deep); background:var(--teal-tint); border-radius:5px; padding:2px 7px; flex:none; min-width:fit-content;
+  }
+  .role-name{font-weight:600; color:var(--ink); white-space:pre-line;}
+  .role-name.struck{ text-decoration:line-through; color:var(--ink-faint); font-weight:500; }
+  .role-phone{font-family:'JetBrains Mono',monospace; color:var(--ink-soft); font-size:12.5px;}
+  .copy-icon-btn{
+    all:unset; cursor:pointer; display:inline-flex; align-items:center; justify-content:center;
+    width:20px; height:20px; border-radius:5px; color:var(--ink-faint); vertical-align:middle; margin-left:3px; flex:none;
+  }
+  .copy-icon-btn:hover{ background:var(--line-soft); color:var(--teal); }
+  .copy-icon-btn.copied{ color:var(--teal); }
+  .inline-phone{ display:inline-flex; align-items:center; white-space:nowrap; }
+  .ph-val-row{ display:flex; align-items:flex-start; gap:2px; justify-content:space-between; }
+  .warranty-row .role-label{background:var(--red-tint); color:var(--red);}
+
+  .sub-block{
+    background:var(--violet-tint); border:1px solid var(--violet-line); border-radius:8px; padding:8px 10px; margin-top:4px;
+    font-size:13px; color:var(--violet); line-height:1.5;
+  }
+  .sub-block b{font-weight:700;}
+
+  .phones-grid{
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:6px 14px;
+    font-size:12.5px; color:var(--ink-soft); border-top:1px solid var(--line-soft); padding-top:8px; margin-top:4px;
+  }
+  .phones-grid .ph-label{color:var(--ink-faint); font-size:11px; text-transform:uppercase; letter-spacing:.02em;}
+  .phones-grid .ph-val{font-family:'JetBrains Mono',monospace; font-size:12px; white-space:pre-line;}
+
+  .scripts{margin-top:8px;}
+  .script-toggle{ all:unset; cursor:pointer; font-size:12px; color:var(--teal); font-weight:600; display:inline-flex; gap:5px; align-items:center; margin-right: 10px; }
+  .script-box{
+    background:var(--line-soft); border-left:3px solid var(--teal); border-radius:0 8px 8px 0;
+    padding:10px 14px; font-size:13px; line-height:1.6; color:var(--ink-soft); margin-top:6px; white-space:pre-line; display:none;
+  }
+  .script-box.open{display:block;}
+  .copy-btn{all:unset; cursor:pointer; font-size:11px; color:var(--teal); font-weight:600; margin-top:6px; display:inline-block;}
+  .copy-btn:hover{text-decoration:underline;}
+
+  .note{
+    display:inline-flex; align-items:flex-start; gap:5px; font-size:11.5px; font-weight:600; color:var(--amber);
+    background:var(--amber-tint); border:1px solid var(--amber-line); border-radius:6px; padding:5px 8px; margin-top:8px; margin-right:6px; max-width: 100%;
+  }
+
+  mark{background:#FAC775; color:var(--ink); border-radius:3px; padding:0 1px;}
+  .empty{text-align:center; padding:60px 20px; color:var(--ink-faint); font-size:14px;}
+
+  @media (max-width:640px){
+    .shell{padding:16px;}
+    .phones-grid{grid-template-columns:1fr 1fr;}
+    header.top{flex-direction:column;}
+    .sync-box{align-items:flex-start;}
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <header class="top">
+    <div>
+      <p class="eyebrow">СК Азбука · шахматка домов</p>
+      <h1>Кто инженер по этому адресу</h1>
+      <p class="sub">Данные читаются напрямую из Google Таблицы через Apps Script</p>
+    </div>
+    <div class="sync-box">
+      <button class="refresh-btn" id="refreshBtn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        Обновить данные
+      </button>
+      <div class="sync-status" id="syncStatus">Загрузка…</div>
+    </div>
+  </header>
+
+  <div class="city-tabs" id="cityTabs"></div>
+
+  <div class="search-wrap">
+    <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input id="search" type="text" placeholder="Например: Знак, Краснополянская 5, Онищук, 8 912…" autocomplete="off">
+  </div>
+
+  <div id="infoBox"></div>
+  <div id="errorBox"></div>
+
+  <div class="toolbar">
+    <p class="count-line" id="countLine"></p>
+    <div class="toolbar-btns">
+      <button id="expandAll">Развернуть все ЖК</button>
+      <button id="collapseAll">Свернуть всё</button>
+    </div>
+  </div>
+
+  <div id="results"><div class="loading-card"><div class="spin"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></div><br>Загружаю данные из таблицы…</div></div>
+</div>
+
+<script>
+/* ===================== КОНФИГУРАЦИЯ ИСТОЧНИКА ДАННЫХ ===================== */
+const SHEET_ID = '141Eu_dQTzhh3E31H-SI5pYk8uZz636_upDYTnyCTyF4';
+const SUBSTITUTIONS_GID = '1261697282';
+const ZARYADNOE_DUTY_GID = '888204568';
+const COMPETENCE_CENTER_GID = '1667638831';
+
+/* ===================== КОНФИГУРАЦИЯ КОЛОНОК ===================== */
+const CITY_CONFIG = [
+  { name: 'Киров',        gid: '0',         cols: 'kirov' },
+  { name: 'Ульяновск',    gid: '512886979', cols: 'ulyanovsk' },
+  { name: 'Ижевск',       gid: '480257678', cols: 'izhevsk' },
+  { name: 'Пермь',        gid: '1203146939',cols: 'perm' },
+  { name: 'Екатеринбург', gid: '383515860', cols: 'ekb' },
+];
+
+const COLUMN_MAPS = {
+  kirov: {
+    zhk:0, street:1, house:2,
+    roles: [ {idx:3, label:'Инженер СК'}, {idx:5, label:'Хаус мастер'}, {idx:6, label:'ОГС', warrantyAware:true}, {idx:8, label:'Менеджер клиентского сервиса'}, {idx:9, label:'IT специалист'} ],
+    phones: [ {idx:10,key:'lift'}, {idx:11,key:'plumber'}, {idx:12,key:'electric'}, {idx:13,key:'resource'} ],
+    scriptCols: [ {idx:4, label:'Скрипт инженера СК'}, {idx:7, label:'Скрипт ОГС'} ],
+    extraNoteIdx: 14
+  },
+  ulyanovsk: {
+    zhk:0, street:1, house:2,
+    roles: [ {idx:3, label:'Гл. инженер'}, {idx:4, label:'Инженер СК'}, {idx:6, label:'ОГС', warrantyAware:true}, {idx:8, label:'Менеджер клиентского сервиса'}, {idx:9, label:'IT специалист'} ],
+    phones: [ {idx:10,key:'lift'}, {idx:11,key:'general'}, {idx:12,key:'gas'}, {idx:13,key:'fire'}, {idx:14,key:'resource'} ],
+    scriptCols: [ {idx:5, label:'Скрипт инженера СК'}, {idx:7, label:'Скрипт ОГС'} ]
+  },
+  izhevsk: {
+    zhk:0, street:1, house:2,
+    roles: [ {idx:3, label:'Инженер'}, {idx:5, label:'ОГС', warrantyAware:true}, {idx:7, label:'Менеджер клиентского сервиса'}, {idx:8, label:'IT специалист'} ],
+    phones: [ {idx:9,key:'lift'}, {idx:10,key:'fire'}, {idx:11,key:'general'}, {idx:12,key:'resource'} ],
+    scriptCols: [ {idx:4, label:'Скрипт инженера'}, {idx:6, label:'Скрипт ОГС'} ]
+  },
+  perm: {
+    zhk:0, street:1, house:2,
+    roles: [ {idx:3, label:'Инженер'}, {idx:5, label:'Хаус мастер'}, {idx:6, label:'ОГС', warrantyAware:true}, {idx:8, label:'Менеджер клиентского сервиса'}, {idx:9, label:'IT специалист'} ],
+    phones: [ {idx:10,key:'lift'}, {idx:11,key:'general'}, {idx:12,key:'resource'} ],
+    scriptCols: [ {idx:4, label:'Скрипт инженера'}, {idx:7, label:'Скрипт ОГС'} ]
+  },
+  ekb: {
+    zhk:0, street:1, house:2,
+    roles: [ {idx:3, label:'Инженер'}, {idx:5, label:'ОГС', warrantyAware:true}, {idx:7, label:'Менеджер клиентского сервиса'}, {idx:8, label:'IT специалист'} ],
+    phones: [ {idx:9,key:'lift'}, {idx:10,key:'general'}, {idx:11,key:'resource'} ],
+    scriptCols: [ {idx:4, label:'Скрипт инженера'}, {idx:6, label:'Скрипт ОГС'} ]
+  }
+};
+
+const PHONE_LABELS = {
+  lift:"Лифт", plumber:"Сантехник", electric:"Электрик", general:"Аварийная служба",
+  gas:"Газовая авар. служба", fire:"Пожарная сигнализация", resource:"Ресурсоснабж. организации"
+};
+
+/* ===================== СОСТОЯНИЕ ===================== */
+const STATE = {
+  cities: {},
+  substitutions: [],
+  substitutionsError: null,
+  zaryadnoeDuty: [],
+  zaryadnoeDutyError: null,
+  competenceCenter: { departments: [], error: null },
+  activeCity: 'Киров',
+  query: '',
+  zhkOpen: {},
+  houseOpen: {},
+  lastSync: null,
+};
+
+/* ===================== ПАРСИНГ ГОРОДА (из display-values, полученных с сервера) ===================== */
+function isHeaderish(s){
+  const t = (s||'').trim().toLowerCase();
+  return t === '' || t === 'улица' || t.includes('№ дома') || t === 'жк';
+}
+
+function parseRoleCellMulti(label, raw, warrantyAware){
+  raw = (raw||'').trim();
+  if (!raw) return [];
+  if (warrantyAware && /^гарантия закончилась/i.test(raw)) return [{ label, warranty: raw }];
+  if (/здравствуйте/i.test(raw)) return [];
+
+  // ищем ВСЕ вхождения "тел...число" в ячейке (тел., Телефон, телефон: и т.п.)
+  const phoneRe = /тел[а-яёА-ЯЁ]*\.?\s*[:.]?\s*([+0-9][0-9 \-()]{6,})/gi;
+  const matches = [...raw.matchAll(phoneRe)];
+
+  if (matches.length === 0){
+    return [{ label, name: raw.replace(/\s*\n\s*/g,' ').trim(), phone: '' }];
+  }
+
+  const entries = [];
+  let prevEnd = 0;
+  matches.forEach(m=>{
+    const phone = m[1].trim();
+    let name = raw.slice(prevEnd, m.index);
+    name = name.replace(/\s*\n\s*/g,' ').trim().replace(/[,\s]+$/,'');
+    entries.push({ label, name, phone });
+    prevEnd = m.index + m[0].length;
+  });
+  return entries;
+}
+
+function parseCityRows(rows, mapCfg){
+  const houses = []; const info = [];
+  for (const row of rows){
+    const zhk = (row[mapCfg.zhk]||'').trim();
+    const street = (row[mapCfg.street]||'').trim();
+    const house = (row[mapCfg.house]||'').trim();
+
+    if (/адрес офиса|исполнительный директор/i.test(zhk)){
+      const extras = row.slice(1).map(x=>(x||'').trim()).filter(Boolean);
+      info.push([zhk, ...extras].join(' · '));
+      continue;
+    }
+
+    if (isHeaderish(street) || isHeaderish(house)) continue;
+
+    const roles = []; const scripts = [];
+    (mapCfg.roles||[]).forEach(rc=>{
+      const raw = (row[rc.idx]||'').trim();
+      if (/здравствуйте/i.test(raw)){ scripts.push({ label: 'Скрипт: ' + rc.label, text: raw }); return; }
+      const parsedArr = parseRoleCellMulti(rc.label, raw, rc.warrantyAware);
+      parsedArr.forEach(p=>roles.push(p));
+    });
+
+    const phones = {};
+    (mapCfg.phones||[]).forEach(pc=>{
+      const raw = (row[pc.idx]||'').trim();
+      if (raw) phones[pc.key] = raw;
+    });
+
+    (mapCfg.scriptCols||[]).forEach(sc=>{
+      const raw = (row[sc.idx]||'').trim();
+      if (raw) scripts.push({ label: sc.label, text: raw });
+    });
+
+    const notes = [];
+    if (mapCfg.extraNoteIdx !== undefined){
+      const raw = (row[mapCfg.extraNoteIdx]||'').trim();
+      if (raw && !/здравствуйте/i.test(raw)) notes.push('доп.: ' + raw);
+    }
+
+    if (!street && !house) continue;
+    houses.push({ zhk: zhk || '(без ЖК)', street, house, roles, phones, scripts, notes });
+  }
+  return { houses, info };
+}
+
+/* ===================== ПАРСИНГ ЗАМЕН ===================== */
+function parseDateRu(s){
+  s = (s||'').trim();
+  const m = s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+  if (!m) return null;
+  return new Date(parseInt(m[3]), parseInt(m[2])-1, parseInt(m[1]));
+}
+
+function parseSubstitutions(rows){
+  const list = [];
+  for (const row of rows){
+    const city = (row[0]||'').trim();
+    const name = (row[1]||'').trim();
+    const subNames = [ (row[2]||'').trim(), (row[3]||'').trim(), (row[4]||'').trim() ].filter(Boolean);
+    if (!city || !name || subNames.length === 0) continue;
+    if (city.toLowerCase() === 'город') continue;
+    list.push({
+      city, name,
+      subName: subNames.join(', '),
+      subNames,
+      script: (row[5]||'').trim(),
+      subPhone: (row[6]||'').trim(),
+      reason: (row[7]||'').trim(),
+      dateFrom: parseDateRu(row[8]),
+      dateTo: parseDateRu(row[9]),
+      comment: (row[10]||'').trim(),
+    });
+  }
+  return list;
+}
+
+function activeSubstitutionFor(cityName, roleName){
+  if (!roleName) return null;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const rn = roleName.toLowerCase();
+  for (const s of STATE.substitutions){
+    if (s.city.toLowerCase() !== cityName.toLowerCase()) continue;
+    const sn = s.name.toLowerCase();
+    if (!(rn.includes(sn) || sn.includes(rn))) continue;
+    if (s.dateFrom && today < s.dateFrom) continue;
+    if (s.dateTo && today > s.dateTo) continue;
+    return s;
+  }
+  return null;
+}
+
+/* ===================== ГРАФИК ДЕЖУРСТВ ЭЛЕКТРИКА ЖК ЗАРЯДНОЕ (Киров) =====================
+   Живая синхронизация с отдельной вкладкой Google Таблицы (ФИО | Телефон | с | по).
+   Подменяет ТОЛЬКО поле "Электрик" в карточках домов ЖК Зарядное — роль
+   "Хаус мастер" этот график не затрагивает (подтверждено пользователем).
+*/
+function parseZaryadnoeDuty(rows){
+  const list = [];
+  for (const row of rows){
+    const name = (row[0]||'').trim();
+    const phone = (row[1]||'').trim();
+    if (!name || !phone) continue;
+    if (name.toLowerCase() === 'фио') continue; // строка заголовка
+    const dateFrom = parseDateRu(row[2]);
+    const dateTo = parseDateRu(row[3]);
+    if (!dateFrom || !dateTo) continue;
+    list.push({ name, phone, dateFrom, dateTo });
+  }
+  return list;
+}
+
+function getZaryadnoeDutyToday(){
+  const today = new Date(); today.setHours(0,0,0,0);
+  for (const s of STATE.zaryadnoeDuty){
+    if (today >= s.dateFrom && today <= s.dateTo) return s;
+  }
+  return null;
+}
+
+// применяет дежурство электрика поверх обычных данных дома ЖК Зарядное (Киров)
+function applyZaryadnoeDuty(cityName, h){
+  if (cityName !== 'Киров' || h.zhk !== 'Зарядное') return h;
+  const duty = getZaryadnoeDutyToday();
+  const clone = { ...h, roles: (h.roles||[]).map(r=>({...r})), phones: {...h.phones}, notes: [...(h.notes||[])] };
+
+  if (duty){
+    clone.phones.electric = `${duty.name}, тел. ${duty.phone}`;
+    clone.notes.push(`дежурный электрик по графику: ${duty.name}, с ${duty.dateFrom.toLocaleDateString('ru-RU')} по ${duty.dateTo.toLocaleDateString('ru-RU')}`);
+  } else {
+    clone.notes.push('график дежурств электрика ЖК Зарядное не содержит записи на сегодня — уточните у руководителя, кто сейчас на дежурстве');
+  }
+  return clone;
+}
+
+/* ===================== ЦЕНТР КОМПЕТЕНЦИЙ =====================
+   Отдельная вкладка (не привязана к городу/адресу) — список сотрудников
+   по отделам, работает на все регионы. Основное назначение — видеть
+   активные замены (отпуск/больничный) по этим людям. В листе "Замены"
+   для таких сотрудников город указывается как "Центр компетенций".
+*/
+function parseCompetenceCenter(rows){
+  const departments = [];
+  let current = null;
+  for (const row of rows){
+    const b = (row[1]||'').trim();
+    const c = (row[2]||'').trim();
+    if (!b && !c) continue;                    // пустая строка — пропуск
+    if (b === 'Фамилия, имя') continue;         // строка-подпись колонок
+    if (b && !c){                               // заголовок отдела
+      current = { name: b, people: [] };
+      departments.push(current);
+      continue;
+    }
+    if (b && c && current){                     // строка сотрудника
+      current.people.push({ name: b, position: c });
+    }
+  }
+  return departments;
+}
+
+
+/* ===================== ЗАГРУЗКА ДАННЫХ (прямой CSV-фетч из Google Таблиц) ===================== */
+function parseCSV(text){
+  const rows = []; let row = [], field = '', inQuotes = false;
+  for (let i=0;i<text.length;i++){
+    const c = text[i];
+    if (inQuotes){
+      if (c === '"'){ if (text[i+1] === '"'){ field+='"'; i++; } else inQuotes = false; }
+      else field += c;
+    } else {
+      if (c === '"') inQuotes = true;
+      else if (c === ',') { row.push(field); field=''; }
+      else if (c === '\r') { /* skip */ }
+      else if (c === '\n') { row.push(field); rows.push(row); row=[]; field=''; }
+      else field += c;
+    }
+  }
+  if (field.length || row.length){ row.push(field); rows.push(row); }
+  return rows;
+}
+
+function csvUrl(gid){
+  return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${gid}&_=${Date.now()}`;
+}
+
+async function fetchCsvRows(gid){
+  const res = await fetch(csvUrl(gid));
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const text = await res.text();
+  return parseCSV(text);
+}
+
+async function loadAll(){
+  const btn = document.getElementById('refreshBtn');
+  btn.classList.add('spinning');
+  document.getElementById('syncStatus').textContent = 'Синхронизация…';
+  document.getElementById('errorBox').innerHTML = '';
+
+  const cityPromises = CITY_CONFIG.map(async c=>{
+    try{
+      const rows = await fetchCsvRows(c.gid);
+      const { houses, info } = parseCityRows(rows, COLUMN_MAPS[c.cols]);
+      STATE.cities[c.name] = { houses, info, error: null, loading: false };
+    }catch(e){
+      const prev = STATE.cities[c.name] || { houses:[], info:[] };
+      STATE.cities[c.name] = { houses: prev.houses, info: prev.info, error: 'Не удалось загрузить данные по городу «' + c.name + '». Проверьте интернет-соединение или доступ к таблице (должна быть открыта по ссылке).', loading: false };
+    }
+  });
+
+  const subsPromise = (async ()=>{
+    try{
+      const rows = await fetchCsvRows(SUBSTITUTIONS_GID);
+      STATE.substitutions = parseSubstitutions(rows);
+      STATE.substitutionsError = null;
+    }catch(e){
+      STATE.substitutions = [];
+      STATE.substitutionsError = 'Список замен не загрузился — проверьте интернет-соединение или доступ к таблице.';
+    }
+  })();
+
+  const dutyPromise = (async ()=>{
+    try{
+      const rows = await fetchCsvRows(ZARYADNOE_DUTY_GID);
+      STATE.zaryadnoeDuty = parseZaryadnoeDuty(rows);
+      STATE.zaryadnoeDutyError = null;
+    }catch(e){
+      STATE.zaryadnoeDuty = [];
+      STATE.zaryadnoeDutyError = 'График дежурств электрика ЖК Зарядное не загрузился — проверьте интернет-соединение или доступ к таблице.';
+    }
+  })();
+
+  const competencePromise = (async ()=>{
+    try{
+      const rows = await fetchCsvRows(COMPETENCE_CENTER_GID);
+      STATE.competenceCenter = { departments: parseCompetenceCenter(rows), error: null };
+    }catch(e){
+      STATE.competenceCenter = { departments: STATE.competenceCenter.departments||[], error: 'Не удалось загрузить «Центр компетенций». Проверьте интернет-соединение или доступ к таблице.' };
+    }
+  })();
+
+  await Promise.all([...cityPromises, subsPromise, dutyPromise, competencePromise]);
+
+  STATE.lastSync = new Date();
+  btn.classList.remove('spinning');
+  document.getElementById('syncStatus').textContent = 'Обновлено: ' + STATE.lastSync.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+  renderTabs();
+  render();
+}
+
+/* ===================== РЕНДЕР ===================== */
+const CHEVRON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"/></svg>';
+const COPY_ICON = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+const CHECK_ICON = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+
+function cleanPhoneForCopy(phone){
+  return (phone||'').replace(/[()\-\s]/g, '');
+}
+
+function phoneCopyBtn(phone){
+  if (!phone) return '';
+  const clean = cleanPhoneForCopy(phone);
+  return `<button class="copy-icon-btn" data-phone="${escapeHtml(clean)}" title="Скопировать номер">${COPY_ICON}</button>`;
+}
+
+// находит границы отдельных телефонных номеров в тексте (даже если их несколько
+// подряд без разделителя) через "якоря" начала номера: +7, отдельная "8" перед
+// пробелом/скобкой/дефисом, либо код в скобках без предшествующей "8"
+function findPhoneMatches(text){
+  const matches = [];
+  const anchorRe = /(\+7|(?<![\d])8(?=[\s\-(])|(?<!8)(?<!8\s)(?<![\d])\((?=\d{3,5}\)))/g;
+  let m;
+  const anchors = [];
+  while ((m = anchorRe.exec(text)) !== null) anchors.push(m.index);
+
+  const MAXWIN = 22; // максимальная длина одного форматированного номера
+  const consumed = [];
+
+  anchors.forEach((start, i) => {
+    const hardEnd = i+1 < anchors.length ? Math.min(anchors[i+1], start+MAXWIN) : Math.min(text.length, start+MAXWIN);
+    let chunk = text.slice(start, hardEnd);
+    const lastDigit = chunk.search(/\d(?!.*\d)/);
+    if (lastDigit === -1) return;
+    chunk = chunk.slice(0, lastDigit+1);
+    const digitCount = (chunk.match(/\d/g)||[]).length;
+    if (digitCount >= 5){
+      const end = start + chunk.length;
+      matches.push({ start, end, value: chunk.trim() });
+      consumed.push([start, end]);
+    }
+  });
+
+  // в промежутках между уже найденными номерами ищем короткие "местные" номера
+  // без явного кода (типа "38-37-17")
+  let cursor = 0;
+  consumed.sort((a,b)=>a[0]-b[0]);
+  const gaps = [];
+  consumed.forEach(([s,e])=>{ if (s>cursor) gaps.push([cursor, s]); cursor = Math.max(cursor, e); });
+  if (cursor < text.length) gaps.push([cursor, text.length]);
+
+  gaps.forEach(([gs, ge])=>{
+    const segment = text.slice(gs, ge);
+    const localRe = /[\d][\d\-\s()]{3,}\d/g;
+    let sm;
+    while ((sm = localRe.exec(segment)) !== null){
+      const val = sm[0];
+      const digitCount = (val.match(/\d/g)||[]).length;
+      if (digitCount >= 5){
+        matches.push({ start: gs+sm.index, end: gs+sm.index+val.length, value: val.trim() });
+      }
+    }
+  });
+
+  matches.sort((a,b)=>a.start-b.start);
+  return matches;
+}
+
+// рендерит многострочный текст телефонного поля, вставляя отдельную кнопку
+// копирования сразу после КАЖДОГО найденного номера (а не одну на весь блок)
+function renderPhoneValueWithCopy(text, q){
+  if (!text) return '';
+  const matches = findPhoneMatches(text);
+  if (matches.length === 0) return highlight(text, q);
+  let out = '';
+  let lastIndex = 0;
+  matches.forEach(mm=>{
+    out += highlight(text.slice(lastIndex, mm.start), q);
+    out += `<span class="inline-phone">${highlight(mm.value, q)}${phoneCopyBtn(mm.value)}</span>`;
+    lastIndex = mm.end;
+  });
+  out += highlight(text.slice(lastIndex), q);
+  return out;
+}
+
+// достаём "имя" перед конкретным номером внутри телефонного поля
+// (например, из "Коковихин Геннадий, тел. 8 951 356 75 20" достаём "Коковихин Геннадий")
+function extractNameBeforePhone(preText){
+  return preText
+    .replace(/тел[а-яёА-ЯЁ]*\.?\s*[:.]?\s*$/i, '')
+    .replace(/^[,;\s\n]+/, '')
+    .replace(/[,\s\n]+$/, '')
+    .trim();
+}
+
+// как renderPhoneValueWithCopy, но дополнительно проверяет каждого человека
+// перед номером на активную замену — телефонные поля (сантехник, электрик и т.п.)
+// тоже могут содержать личное имя, а не только структурированные "роли"
+function renderPhoneFieldWithSubstitution(cityName, text, q, idx, phoneIdx){
+  if (!text) return { html: '', hasSub: false };
+  const matches = findPhoneMatches(text);
+  if (matches.length === 0) return { html: highlight(text, q), hasSub: false };
+
+  let out = '';
+  let lastIndex = 0;
+  let hasSub = false;
+  let subCounter = 0;
+
+  matches.forEach(mm=>{
+    const preText = text.slice(lastIndex, mm.start);
+    out += highlight(preText, q);
+
+    const name = extractNameBeforePhone(preText);
+    const sub = name ? activeSubstitutionFor(cityName, name) : null;
+
+    if (sub){
+      hasSub = true;
+      out += `<span class="inline-phone"><span class="role-name struck" style="font-size:inherit; font-weight:inherit;">${highlight(mm.value, q)}</span>${phoneCopyBtn(mm.value)}</span>`;
+      const fromStr = sub.dateFrom ? sub.dateFrom.toLocaleDateString('ru-RU') : '…';
+      const toStr = sub.dateTo ? sub.dateTo.toLocaleDateString('ru-RU') : '…';
+      const subScriptId = 'phsubscr-' + idx + '-' + phoneIdx + '-' + (subCounter++);
+      out += `<div class="sub-block" style="margin:4px 0 6px;">с ${fromStr} по ${toStr} замена на <b>${highlight(sub.subName, q)}</b>${sub.subPhone ? ' · ' + highlight(sub.subPhone, q) + phoneCopyBtn(sub.subPhone) : ''}${sub.reason ? `<br>Причина: ${highlight(sub.reason, q)}` : ''}${sub.script ? `<div class="scripts"><button class="script-toggle" data-target="${subScriptId}"><span>&#9660;</span> Скрипт</button><div class="script-box" id="${subScriptId}">${highlight(sub.script, q)}<br><button class="copy-btn" data-copy="${subScriptId}">Скопировать текст</button></div></div>` : ''}</div>`;
+    } else {
+      out += `<span class="inline-phone">${highlight(mm.value, q)}${phoneCopyBtn(mm.value)}</span>`;
+    }
+    lastIndex = mm.end;
+  });
+  out += highlight(text.slice(lastIndex), q);
+  return { html: out, hasSub };
+}
+
+function escapeHtml(s){ return (s||"").toString().replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function highlight(text, q){
+  if(!q) return escapeHtml(text);
+  const esc = escapeHtml(text); const qEsc = escapeHtml(q);
+  try{ const re = new RegExp('('+qEsc.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','ig'); return esc.replace(re, '<mark>$1</mark>'); }catch(e){ return esc; }
+}
+
+function renderTabs(){
+  const el = document.getElementById('cityTabs');
+  el.innerHTML = '';
+  CITY_CONFIG.forEach(c=>{
+    const st = STATE.cities[c.name];
+    const b = document.createElement('button');
+    b.textContent = c.name;
+    if (st && st.error) { b.classList.add('has-error'); b.innerHTML = c.name + ' <span class="dot"></span>'; }
+    if (c.name === STATE.activeCity) b.classList.add('active');
+    b.onclick = ()=>{ STATE.activeCity = c.name; renderTabs(); render(); };
+    el.appendChild(b);
+  });
+
+  const divider = document.createElement('span');
+  divider.style.cssText = 'width:1px; align-self:stretch; background:var(--line); margin:0 4px;';
+  el.appendChild(divider);
+
+  const cc = document.createElement('button');
+  cc.textContent = 'Центр компетенций';
+  cc.classList.add('competence-tab');
+  if (STATE.competenceCenter.error) { cc.classList.add('has-error'); cc.innerHTML = 'Центр компетенций <span class="dot"></span>'; }
+  if (STATE.activeCity === 'Центр компетенций') cc.classList.add('active');
+  cc.onclick = ()=>{ STATE.activeCity = 'Центр компетенций'; renderTabs(); render(); };
+  el.appendChild(cc);
+}
+
+function houseMatches(h, q){
+  if(!q) return true;
+  const roleText = (h.roles||[]).map(r=>[r.label,r.name,r.phone,r.warranty].filter(Boolean).join(" ")).join(" ");
+  const phoneText = h.phones ? Object.values(h.phones).join(" ") : "";
+  const scriptText = (h.scripts||[]).map(s=>s.text).join(" ");
+  const noteText = (h.notes||[]).join(" ");
+  const hay = [h.zhk, h.street, h.house, roleText, phoneText, scriptText, noteText].join(" ").toLowerCase();
+  return hay.includes(q.toLowerCase());
+}
+
+function houseKey(cityName, h){ return cityName + '|' + h.zhk + '|' + h.street + '|' + h.house; }
+
+function renderHouse(cityName, h, idx, forceOpen){
+  h = applyZaryadnoeDuty(cityName, h);
+  const key = houseKey(cityName, h);
+  const isOpen = forceOpen || !!STATE.houseOpen[key];
+
+  let hasSub = false;
+  const roleBlocks = [];
+  (h.roles||[]).forEach(r=>{
+    const sub = !r.warranty ? activeSubstitutionFor(cityName, r.name) : null;
+    if (sub) hasSub = true;
+    roleBlocks.push({ r, sub });
+  });
+
+  let rolesHtml = '';
+  roleBlocks.forEach(({r, sub}, subIdx)=>{
+    if (r.warranty){
+      rolesHtml += `<div class="role-row warranty-row"><span class="role-label">${escapeHtml(r.label)}</span><span class="role-name">${highlight(r.warranty, STATE.query)}</span></div>`;
+      return;
+    }
+    rolesHtml += `<div class="role-row"><span class="role-label">${escapeHtml(r.label)}</span><span class="role-name${sub?' struck':''}">${highlight(r.name||"", STATE.query)}</span>${r.phone?`<span class="role-phone">${highlight(r.phone, STATE.query)}</span>${phoneCopyBtn(r.phone)}`:''}</div>`;
+    if (sub){
+      const fromStr = sub.dateFrom ? sub.dateFrom.toLocaleDateString('ru-RU') : '…';
+      const toStr = sub.dateTo ? sub.dateTo.toLocaleDateString('ru-RU') : '…';
+      const subScriptId = 'subscr-' + idx + '-' + subIdx;
+      rolesHtml += `<div class="sub-block">
+        с ${fromStr} по ${toStr} замена на <b>${highlight(sub.subName, STATE.query)}</b>${sub.subPhone ? ' · ' + highlight(sub.subPhone, STATE.query) + phoneCopyBtn(sub.subPhone) : ''}
+        ${sub.reason ? `<br>Причина: ${highlight(sub.reason, STATE.query)}` : ''}
+        ${sub.comment ? `<br>${highlight(sub.comment, STATE.query)}` : ''}
+        ${sub.script ? `<div class="scripts"><button class="script-toggle" data-target="${subScriptId}"><span>&#9660;</span> Скрипт</button><div class="script-box" id="${subScriptId}">${highlight(sub.script, STATE.query)}<br><button class="copy-btn" data-copy="${subScriptId}">Скопировать текст</button></div></div>` : ''}
+      </div>`;
+    }
+  });
+  if(!rolesHtml) rolesHtml = '<div class="role-row" style="color:var(--ink-faint); font-size:13px;">Ответственный не указан отдельно для этого дома</div>';
+
+  let phonesHtml = '';
+  if(h.phones){
+    Object.keys(h.phones).forEach((k, phoneIdx)=>{
+      const { html: phVal, hasSub: phHasSub } = renderPhoneFieldWithSubstitution(cityName, h.phones[k], STATE.query, idx, phoneIdx);
+      if (phHasSub) hasSub = true;
+      phonesHtml += `<div><div class="ph-label">${escapeHtml(PHONE_LABELS[k]||k)}</div><div class="ph-val">${phVal}</div></div>`;
+    });
+  }
+
+  // div/header создаём только теперь, когда hasSub уже учитывает и роли, и телефоны
+  const div = document.createElement('div');
+  div.className = 'house' + (isOpen ? ' open' : '') + (hasSub ? ' has-sub' : '');
+  div.dataset.key = key;
+
+  const header = document.createElement('button');
+  header.className = 'house-header';
+  const roleCount = (h.roles||[]).length;
+  header.innerHTML = `<span class="chevron">${CHEVRON}</span><span class="house-addr"><span class="street">${highlight(h.street,STATE.query)}</span>, <span class="num">${highlight(h.house,STATE.query)}</span></span><span class="house-hint">${hasSub ? 'ЕСТЬ ЗАМЕНА' : (roleCount ? roleCount+' контакт(а)' : '')}</span>`;
+  header.onclick = (e)=>{
+    e.stopPropagation();
+    const nowOpen = !div.classList.contains('open');
+    div.classList.toggle('open', nowOpen);
+    STATE.houseOpen[key] = nowOpen;
+  };
+
+
+  let scriptsHtml = '', scriptBoxes = '';
+  (h.scripts||[]).forEach((s,i)=>{
+    const id = 'scr-'+idx+'-'+i;
+    scriptsHtml += `<button class="script-toggle" data-target="${id}"><span>&#9660;</span> ${escapeHtml(s.label)}</button>`;
+    scriptBoxes += `<div class="script-box" id="${id}">${highlight(s.text, STATE.query)}<br><button class="copy-btn" data-copy="${id}">Скопировать текст</button></div>`;
+  });
+
+  let notesHtml = '';
+  (h.notes||[]).forEach(n=>{ notesHtml += `<span class="note">&#9888; ${highlight(n, STATE.query)}</span>`; });
+
+  const body = document.createElement('div');
+  body.className = 'house-body';
+  body.innerHTML = `
+    <div class="roles">${rolesHtml}</div>
+    ${phonesHtml?`<div class="phones-grid">${phonesHtml}</div>`:''}
+    ${scriptsHtml?`<div class="scripts">${scriptsHtml}${scriptBoxes}</div>`:''}
+    ${notesHtml}
+  `;
+
+  div.appendChild(header);
+  div.appendChild(body);
+  return div;
+}
+
+function renderCompetenceCenter(){
+  const resultsEl = document.getElementById('results');
+  const infoBoxEl = document.getElementById('infoBox');
+  const errorBoxEl = document.getElementById('errorBox');
+  const countLineEl = document.getElementById('countLine');
+
+  infoBoxEl.innerHTML = '<div class="info-card">Сотрудники центра компетенций работают на все регионы. Замены (отпуск/больничный) отмечаются так же, как в городах — по листу «Замены», где для этих сотрудников указан город «Центр компетенций».</div>';
+
+  errorBoxEl.innerHTML = STATE.competenceCenter.error
+    ? `<div class="error-card"><span>&#9888;</span><span style="flex:1">${escapeHtml(STATE.competenceCenter.error)}</span><button id="retryCity">Повторить</button></div>`
+    : '';
+  const retryBtn = document.getElementById('retryCity');
+  if (retryBtn) retryBtn.onclick = loadAll;
+
+  resultsEl.innerHTML = '';
+  const q = (STATE.query||'').toLowerCase();
+  const departments = STATE.competenceCenter.departments || [];
+
+  const filtered = departments.map(dept=>{
+    const people = dept.people.filter(p=>{
+      if (!q) return true;
+      return (dept.name+' '+p.name+' '+p.position).toLowerCase().includes(q);
+    });
+    return { name: dept.name, people };
+  }).filter(d=>d.people.length>0);
+
+  let total = 0;
+  filtered.forEach(d=> total += d.people.length);
+
+  if (total === 0){
+    resultsEl.innerHTML = `<div class="empty">${STATE.query ? 'Ничего не найдено по запросу «'+escapeHtml(STATE.query)+'».' : 'Данные ещё не загружены.'}</div>`;
+  } else {
+    filtered.forEach(dept=>{
+      const zhkKey = 'Центр компетенций|' + dept.name;
+      const zhkOpenNow = STATE.query ? true : !!STATE.zhkOpen[zhkKey];
+      const gWrap = document.createElement('div');
+      gWrap.className = 'zhk-group' + (zhkOpenNow ? ' open' : '');
+
+      const header = document.createElement('button');
+      header.className = 'zhk-header';
+      header.innerHTML = `<span class="chevron">${CHEVRON}</span><span class="zhk-title">${escapeHtml(dept.name)}</span><span class="zhk-count">${dept.people.length}</span>`;
+      header.onclick = ()=>{
+        const nowOpen = !gWrap.classList.contains('open');
+        gWrap.classList.toggle('open', nowOpen);
+        STATE.zhkOpen[zhkKey] = nowOpen;
+      };
+
+      const body = document.createElement('div');
+      body.className = 'zhk-body';
+
+      dept.people.forEach((p, i)=>{
+        const sub = activeSubstitutionFor('Центр компетенций', p.name);
+        const row = document.createElement('div');
+        row.style.cssText = 'padding:10px 2px; border-top:1px solid var(--line-soft);';
+        let html = `<div class="role-row"><span class="role-label">${escapeHtml(p.position)}</span><span class="role-name${sub?' struck':''}">${highlight(p.name, STATE.query)}</span></div>`;
+        if (sub){
+          const fromStr = sub.dateFrom ? sub.dateFrom.toLocaleDateString('ru-RU') : '…';
+          const toStr = sub.dateTo ? sub.dateTo.toLocaleDateString('ru-RU') : '…';
+          const subScriptId = 'ccsub-' + zhkKey.replace(/\W+/g,'') + '-' + i;
+          html += `<div class="sub-block">с ${fromStr} по ${toStr} замена на <b>${highlight(sub.subName, STATE.query)}</b>${sub.subPhone ? ' · ' + highlight(sub.subPhone, STATE.query) + phoneCopyBtn(sub.subPhone) : ''}${sub.reason ? `<br>Причина: ${highlight(sub.reason, STATE.query)}` : ''}${sub.comment ? `<br>${highlight(sub.comment, STATE.query)}` : ''}${sub.script ? `<div class="scripts"><button class="script-toggle" data-target="${subScriptId}"><span>&#9660;</span> Скрипт</button><div class="script-box" id="${subScriptId}">${highlight(sub.script, STATE.query)}<br><button class="copy-btn" data-copy="${subScriptId}">Скопировать текст</button></div></div>` : ''}</div>`;
+        }
+        row.innerHTML = html;
+        body.appendChild(row);
+      });
+
+      gWrap.appendChild(header);
+      gWrap.appendChild(body);
+      resultsEl.appendChild(gWrap);
+    });
+  }
+
+  countLineEl.textContent = `Центр компетенций: ${total} сотрудник(ов)${STATE.query ? ' по запросу «'+STATE.query+'»' : ''}`;
+
+  resultsEl.querySelectorAll('.script-toggle').forEach(btn=>{
+    btn.onclick = (e)=>{ e.stopPropagation(); document.getElementById(btn.dataset.target).classList.toggle('open'); };
+  });
+  resultsEl.querySelectorAll('.copy-icon-btn').forEach(btn=>{
+    btn.onclick = (e)=>{
+      e.stopPropagation();
+      const val = btn.dataset.phone;
+      navigator.clipboard.writeText(val).then(()=>{
+        const original = btn.innerHTML;
+        btn.innerHTML = CHECK_ICON;
+        btn.classList.add('copied');
+        setTimeout(()=>{ btn.innerHTML = original; btn.classList.remove('copied'); }, 1200);
+      });
+    };
+  });
+  resultsEl.querySelectorAll('[data-copy]').forEach(btn=>{
+    btn.onclick = (e)=>{
+      e.stopPropagation();
+      const el = document.getElementById(btn.dataset.copy);
+      const text = el.innerText.replace('Скопировать текст','').trim();
+      navigator.clipboard.writeText(text).then(()=>{
+        const old = btn.textContent; btn.textContent = 'Скопировано'; setTimeout(()=>{ btn.textContent = old; }, 1500);
+      });
+    };
+  });
+}
+
+function render(){
+  const resultsEl = document.getElementById('results');
+  const infoBoxEl = document.getElementById('infoBox');
+  const errorBoxEl = document.getElementById('errorBox');
+  const countLineEl = document.getElementById('countLine');
+
+  if (STATE.activeCity === 'Центр компетенций'){
+    renderCompetenceCenter();
+    return;
+  }
+
+  const city = STATE.cities[STATE.activeCity];
+
+  if (!city){
+    resultsEl.innerHTML = `<div class="loading-card"><div class="spin"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></div><br>Загружаю данные из таблицы…</div>`;
+    infoBoxEl.innerHTML = ''; errorBoxEl.innerHTML = ''; countLineEl.textContent = '';
+    return;
+  }
+
+  infoBoxEl.innerHTML = (city.info||[]).map(t=>`<div class="info-card">${escapeHtml(t)}</div>`).join('');
+
+  let errHtml = '';
+  if (city.error){
+    errHtml += `<div class="error-card"><span>&#9888;</span><span style="flex:1">Не удалось получить лист «${escapeHtml(STATE.activeCity)}»: ${escapeHtml(city.error)}</span><button id="retryCity">Повторить</button></div>`;
+  }
+  if (STATE.substitutionsError){
+    errHtml += `<div class="error-card" style="background:var(--amber-tint); border-color:var(--amber-line); color:var(--amber);"><span>&#9888;</span><span style="flex:1">${escapeHtml(STATE.substitutionsError)}</span></div>`;
+  }
+  if (STATE.zaryadnoeDutyError && STATE.activeCity === 'Киров'){
+    errHtml += `<div class="error-card" style="background:var(--amber-tint); border-color:var(--amber-line); color:var(--amber);"><span>&#9888;</span><span style="flex:1">${escapeHtml(STATE.zaryadnoeDutyError)}</span></div>`;
+  }
+  errorBoxEl.innerHTML = errHtml;
+  const retryBtn = document.getElementById('retryCity');
+  if (retryBtn) retryBtn.onclick = loadAll;
+
+  resultsEl.innerHTML = "";
+  const groups = {};
+  let total = 0;
+  (city.houses||[]).forEach(h=>{
+    if(!houseMatches(h, STATE.query)) return;
+    total++;
+    if(!groups[h.zhk]) groups[h.zhk] = [];
+    groups[h.zhk].push(h);
+  });
+
+  // сортировка: сначала по улице (А-Я), потом по номеру дома с учётом чисел
+  // (3/1, 3/2, 3/10 — а не текстово 3/1, 3/10, 3/2). Разбираем строку вручную
+  // на куски "цифры"/"не цифры", а не полагаемся на Intl.Collator — так
+  // предсказуемее для нестандартных форматов вроде "11/4", "5к.1", "3 к. 2".
+  function naturalCompare(a, b){
+    a = (a||'').toString().trim();
+    b = (b||'').toString().trim();
+    const re = /(\d+)|(\D+)/g;
+    const aParts = a.match(re) || [];
+    const bParts = b.match(re) || [];
+    const len = Math.max(aParts.length, bParts.length);
+    for (let i=0;i<len;i++){
+      const ap = aParts[i], bp = bParts[i];
+      if (ap === undefined) return -1;
+      if (bp === undefined) return 1;
+      const aIsNum = /^\d+$/.test(ap), bIsNum = /^\d+$/.test(bp);
+      if (aIsNum && bIsNum){
+        const diff = parseInt(ap, 10) - parseInt(bp, 10);
+        if (diff !== 0) return diff;
+      } else {
+        const cmp = ap.localeCompare(bp, 'ru', { sensitivity: 'base' });
+        if (cmp !== 0) return cmp;
+      }
+    }
+    return 0;
+  }
+  Object.keys(groups).forEach(zhk=>{
+    groups[zhk].sort((a, b)=>{
+      const streetCmp = naturalCompare(a.street, b.street);
+      if (streetCmp !== 0) return streetCmp;
+      return naturalCompare(a.house, b.house);
+    });
+  });
+
+  if(total===0 && !city.error){
+    resultsEl.innerHTML = `<div class="empty">${STATE.query ? 'Ничего не найдено по запросу «'+escapeHtml(STATE.query)+'».' : 'Данных по этому городу пока нет в таблице.'}</div>`;
+  } else {
+    let idx = 0;
+    Object.keys(groups).forEach(zhk=>{
+      const zhkKey = STATE.activeCity + '|' + zhk;
+      const zhkOpenNow = STATE.query ? true : !!STATE.zhkOpen[zhkKey];
+      const gWrap = document.createElement('div');
+      gWrap.className = 'zhk-group' + (zhkOpenNow ? ' open' : '');
+
+      const header = document.createElement('button');
+      header.className = 'zhk-header';
+      header.innerHTML = `<span class="chevron">${CHEVRON}</span><span class="zhk-title">${escapeHtml(zhk)}</span><span class="zhk-count">${groups[zhk].length}</span>`;
+      header.onclick = ()=>{
+        const nowOpen = !gWrap.classList.contains('open');
+        gWrap.classList.toggle('open', nowOpen);
+        STATE.zhkOpen[zhkKey] = nowOpen;
+      };
+
+      const body = document.createElement('div');
+      body.className = 'zhk-body';
+      groups[zhk].forEach(h=>{ body.appendChild(renderHouse(STATE.activeCity, h, idx++, !!STATE.query)); });
+
+      gWrap.appendChild(header);
+      gWrap.appendChild(body);
+      resultsEl.appendChild(gWrap);
+    });
+  }
+
+  countLineEl.textContent = `${STATE.activeCity}: ${total} адрес(ов)${STATE.query ? ' по запросу «'+STATE.query+'»' : ''}`;
+
+  resultsEl.querySelectorAll('.script-toggle').forEach(btn=>{
+    btn.onclick = (e)=>{ e.stopPropagation(); document.getElementById(btn.dataset.target).classList.toggle('open'); };
+  });
+  resultsEl.querySelectorAll('.copy-icon-btn').forEach(btn=>{
+    btn.onclick = (e)=>{
+      e.stopPropagation();
+      const val = btn.dataset.phone;
+      navigator.clipboard.writeText(val).then(()=>{
+        const original = btn.innerHTML;
+        btn.innerHTML = CHECK_ICON;
+        btn.classList.add('copied');
+        setTimeout(()=>{ btn.innerHTML = original; btn.classList.remove('copied'); }, 1200);
+      });
+    };
+  });
+  resultsEl.querySelectorAll('[data-copy]').forEach(btn=>{
+    btn.onclick = (e)=>{
+      e.stopPropagation();
+      const el = document.getElementById(btn.dataset.copy);
+      const text = el.innerText.replace('Скопировать текст','').trim();
+      navigator.clipboard.writeText(text).then(()=>{
+        const old = btn.textContent; btn.textContent = 'Скопировано'; setTimeout(()=>{ btn.textContent = old; }, 1500);
+      });
+    };
+  });
+}
+
+/* ===================== СОБЫТИЯ ===================== */
+document.getElementById('search').addEventListener('input', e=>{ STATE.query = e.target.value.trim(); render(); });
+document.getElementById('refreshBtn').addEventListener('click', loadAll);
+document.getElementById('expandAll').addEventListener('click', ()=>{
+  const city = STATE.cities[STATE.activeCity];
+  if (!city) return;
+  (city.houses||[]).forEach(h=>{ STATE.zhkOpen[STATE.activeCity+'|'+h.zhk] = true; });
+  render();
+});
+document.getElementById('collapseAll').addEventListener('click', ()=>{
+  Object.keys(STATE.zhkOpen).forEach(k=>{ if(k.startsWith(STATE.activeCity+'|')) STATE.zhkOpen[k]=false; });
+  Object.keys(STATE.houseOpen).forEach(k=>{ if(k.startsWith(STATE.activeCity+'|')) STATE.houseOpen[k]=false; });
+  render();
+});
+
+/* ===================== СТАРТ ===================== */
+renderTabs();
+loadAll();
+</script>
+</body>
+</html>
